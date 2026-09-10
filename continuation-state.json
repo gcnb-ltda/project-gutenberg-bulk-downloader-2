@@ -1,9 +1,9 @@
 {
   "source_url": "https://www.gutenberg.org/cache/epub/feeds/txt-files.tar.zip",
   "first_offset_in_this_repo": 8587837440,
-  "next_offset": 9342812160,
+  "next_offset": 10097786880,
   "chunk_mib": 90,
   "target_gib": 8,
-  "last_global_part": 99,
-  "bytes_stored_this_repo": 754974720
+  "last_global_part": 107,
+  "bytes_stored_this_repo": 1509949440
 }
