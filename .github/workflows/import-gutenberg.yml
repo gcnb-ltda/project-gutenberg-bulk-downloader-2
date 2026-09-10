@@ -1,0 +1,53 @@
+name: Import Project Gutenberg archive - Part 2
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/import-gutenberg.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gutenberg-import-part-2
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Install requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl coreutils
+
+      - name: Continue Gutenberg importer
+        env:
+          START_OFFSET: '8587837440'
+          START_PART: '92'
+          CHUNK_MIB: '90'
+          TARGET_GIB: '8'
+          PUSH_EVERY: '8'
+        run: |
+          chmod +x archive_to_github.sh
+          ./archive_to_github.sh
+
+      - name: Show continuation state
+        if: always()
+        run: |
+          if [ -f continuation-state.json ]; then
+            cat continuation-state.json
+          fi
