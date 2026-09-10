@@ -1,0 +1,9 @@
+source_url	part	start_byte	end_byte	bytes	sha256	filename
+https://www.gutenberg.org/cache/epub/feeds/txt-files.tar.zip	00092	8587837440	8682209279	94371840	8b23e4c8d3982121b494bd220f8ca6138662fb20352f4194e16a81d6ace1cbb3	archive_parts/pg-all-text-00092.part
+https://www.gutenberg.org/cache/epub/feeds/txt-files.tar.zip	00093	8682209280	8776581119	94371840	fb54d066ce6a6fa4adea44b2c31470079d6cb5829795fcf0b6e9cb632057edb6	archive_parts/pg-all-text-00093.part
+https://www.gutenberg.org/cache/epub/feeds/txt-files.tar.zip	00094	8776581120	8870952959	94371840	fc1bde3d10a7fb5a111dcd92d033b7bebfe063be61a216af72424cd4b42ba74c	archive_parts/pg-all-text-00094.part
+https://www.gutenberg.org/cache/epub/feeds/txt-files.tar.zip	00095	8870952960	8965324799	94371840	e20c387d1fec56e408c8985cc0e8f61218a2593b5db1d7407a299c60fd89a930	archive_parts/pg-all-text-00095.part
+https://www.gutenberg.org/cache/epub/feeds/txt-files.tar.zip	00096	8965324800	9059696639	94371840	51275ee2916f54bdf7db2dd6410e5a9952f523e9e05eb2e9e0f71d4e1e33800d	archive_parts/pg-all-text-00096.part
+https://www.gutenberg.org/cache/epub/feeds/txt-files.tar.zip	00097	9059696640	9154068479	94371840	5117bd827345c64f15d90ae2bbb5b440e0b6aad28cc1fdf0293967f57689fc11	archive_parts/pg-all-text-00097.part
+https://www.gutenberg.org/cache/epub/feeds/txt-files.tar.zip	00098	9154068480	9248440319	94371840	1cace4e98d7eed3193020140b34ba24740b60ec420886cf5ad00025f7d7fc409	archive_parts/pg-all-text-00098.part
+https://www.gutenberg.org/cache/epub/feeds/txt-files.tar.zip	00099	9248440320	9342812159	94371840	c42ae28c83624f067bc131974e53ceb824f29ac9a4ea978cfdb3f60b0b1ea511	archive_parts/pg-all-text-00099.part
