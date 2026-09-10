@@ -1,0 +1,48 @@
+name: Import Project Gutenberg generated EPUBs
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gutenberg-epub-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Install requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync python3 coreutils
+
+      - name: Import generated EPUBs
+        env:
+          TARGET_GIB: '3'
+          MAX_FILE_MIB: '90'
+          PUSH_BATCH_MIB: '700'
+        run: |
+          chmod +x import_generated_epubs.sh
+          ./import_generated_epubs.sh
+
+      - name: Show EPUB continuation state
+        if: always()
+        run: |
+          if [ -f epub-continuation-state.json ]; then
+            cat epub-continuation-state.json
+          fi
