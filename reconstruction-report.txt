@@ -1,0 +1,25 @@
+Project Gutenberg TXT archive reconstruction report
+
+workflow_run_id=34641292064
+workflow_conclusion=success
+reconstructed_file=txt-files.tar.zip
+expected_bytes=11278856242
+actual_bytes=11278856242
+sha256=504191cf3ecfb111da66416952682a5fd23959f9fcea20066a81a7ca9a9fdb94
+zip_members=1
+zip_member=txt-files.tar
+zip_test=passed
+zip_test_message=No errors detected in compressed data of txt-files.tar.zip.
+extracted_files=77806
+extracted_size=29G
+parts_total=120
+parts_repo_1=1-91
+parts_repo_2=92-120
+verified_at_utc=2026-09-11T20:07:45Z
+
+Notes:
+- The reconstruction was performed by GitHub Actions using all 120 archive parts in global numeric order.
+- Parts 1-119 were verified as 94,371,840 bytes each; part 120 was verified as 48,607,282 bytes.
+- The reconstructed ZIP contains one member, txt-files.tar.
+- unzip -t completed successfully.
+- The inner TAR was streamed directly to extraction to avoid materializing a second ~29 GB archive beside the ZIP.
