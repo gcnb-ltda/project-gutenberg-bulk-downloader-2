@@ -1,0 +1,130 @@
+name: Reconstruct Original Gutenberg TXT Archive
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/reconstruct-original.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reconstruct-gutenberg-original
+  cancel-in-progress: false
+
+jobs:
+  reconstruct:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Free runner disk space
+        run: |
+          set -euxo pipefail
+          df -h
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL || true
+          sudo apt-get clean || true
+          df -h
+
+      - name: Install archive tools
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y unzip libarchive-tools
+
+      - name: Reconstruct parts 1 through 120
+        env:
+          EXPECTED_SIZE: '11278856242'
+        run: |
+          set -euo pipefail
+          mkdir -p rebuild
+          cd rebuild
+          : > txt-files.tar.zip
+
+          download_part() {
+            local repo="$1"
+            local n="$2"
+            local expected="$3"
+            local part
+            part=$(printf 'pg-all-text-%05d.part' "$n")
+            local url="https://raw.githubusercontent.com/gcnb-ltda/${repo}/main/archive_parts/${part}"
+            echo "Downloading ${part} from ${repo}"
+            rm -f part.tmp
+            curl -L --fail --retry 8 --retry-delay 3 --connect-timeout 30 --max-time 900 \
+              -A 'GCNB-Gutenberg-Rebuilder/1.0' \
+              "$url" -o part.tmp
+            local actual
+            actual=$(stat -c %s part.tmp)
+            if [ "$actual" -ne "$expected" ]; then
+              echo "ERROR: ${part} size ${actual}, expected ${expected}" >&2
+              exit 1
+            fi
+            cat part.tmp >> txt-files.tar.zip
+            rm -f part.tmp
+          }
+
+          for n in $(seq 1 91); do
+            download_part project-gutenberg-bulk-downloader "$n" 94371840
+          done
+          for n in $(seq 92 119); do
+            download_part project-gutenberg-bulk-downloader-2 "$n" 94371840
+          done
+          download_part project-gutenberg-bulk-downloader-2 120 48607282
+
+          actual=$(stat -c %s txt-files.tar.zip)
+          echo "Reconstructed size: ${actual}"
+          if [ "$actual" -ne "$EXPECTED_SIZE" ]; then
+            echo "ERROR: reconstructed archive size mismatch" >&2
+            exit 1
+          fi
+          sha256sum txt-files.tar.zip | tee txt-files.tar.zip.sha256
+          df -h .
+
+      - name: Validate reconstructed ZIP
+        run: |
+          set -euo pipefail
+          cd rebuild
+          unzip -t txt-files.tar.zip | tee unzip-test.log
+          echo 'Archive members:'
+          unzip -Z1 txt-files.tar.zip | head -20
+          unzip -Z1 txt-files.tar.zip | wc -l | tee archive-member-count.txt
+
+      - name: Extract reconstructed archive
+        run: |
+          set -euo pipefail
+          cd rebuild
+          mkdir -p extracted
+          count=$(unzip -Z1 txt-files.tar.zip | wc -l)
+          member=$(unzip -Z1 txt-files.tar.zip | head -1)
+          echo "ZIP member count: $count"
+          echo "First member: $member"
+
+          # Prefer streaming the inner TAR, which avoids materializing the TAR
+          # beside the 11.28 GB ZIP. If the ZIP contains files directly, unzip normally.
+          if [ "$count" -eq 1 ] && [[ "$member" == *.tar ]]; then
+            echo "Streaming inner TAR directly into extraction directory"
+            unzip -p txt-files.tar.zip "$member" | tar -xf - -C extracted
+          else
+            echo "Extracting ZIP members directly"
+            unzip -q txt-files.tar.zip -d extracted
+          fi
+
+          echo 'Extraction completed.'
+          find extracted -type f | wc -l | tee extracted-file-count.txt
+          du -sh extracted | tee extracted-size.txt
+          df -h .
+
+      - name: Write reconstruction report
+        if: always()
+        run: |
+          set +e
+          cd rebuild 2>/dev/null || exit 0
+          {
+            echo "reconstructed_file=txt-files.tar.zip"
+            echo "expected_bytes=11278856242"
+            if [ -f txt-files.tar.zip ]; then echo "actual_bytes=$(stat -c %s txt-files.tar.zip)"; fi
+            if [ -f txt-files.tar.zip.sha256 ]; then echo "sha256=$(cut -d' ' -f1 txt-files.tar.zip.sha256)"; fi
+            if [ -f archive-member-count.txt ]; then echo "zip_members=$(tail -1 archive-member-count.txt)"; fi
+            if [ -f extracted-file-count.txt ]; then echo "extracted_files=$(tail -1 extracted-file-count.txt)"; fi
+            if [ -f extracted-size.txt ]; then echo "extracted_size=$(tail -1 extracted-size.txt)"; fi
+          } | tee reconstruction-report.txt
